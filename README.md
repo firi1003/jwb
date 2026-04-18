@@ -69,38 +69,91 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 pytest tests/
 ```
 
-## API 엔드포인트
+## API 호출 방법
 
-### GET /health
-모델 초기화 상태 확인
+모델을 사용하려면 FastAPI 서버를 실행한 후 JSON 데이터를 POST 요청으로 보냅니다.
+
+### 서버 실행
+```bash
+python -m uvicorn app:app --host 0.0.0.0 --port 8001
+```
+
+### 데이터 형식
+
+**기본 반도체 센서 버전:**
 ```json
 {
-  "status": "ok",
-  "model_loaded": true,
-  "threshold": 0.028
+  "temp": 30.0,      // 온도 (°C)
+  "pressure": 1.0,   // 압력
+  "vibration": 0.01, // 진동
+  "voltage": 2.0     // 전압
 }
 ```
 
-### POST /infer
-센서 데이터로 이상 감지
+**RF 장비 버전:**
 ```json
-// 요청 (반도체 버전)
 {
-  "temp": 30.0,
-  "pressure": 1.0,
-  "vibration": 0.01,
-  "voltage": 2.0
-}
-
-// 응답
-{
-  "reconstruction_score": 0.0025,
-  "threshold": 0.028,
-  "is_anomaly": false
+  "forward_power": 100.0,   // 전진 전력 (W)
+  "reflected_power": 5.0,   // 반사 전력 (W)
+  "rf_freq": 13.56,         // 주파수 (MHz)
+  "rf_temp": 50.0,          // RF 온도 (°C)
+  "match_imp": 50.0,        // 임피던스 (Ω)
+  "match_volt": 200.0,      // 매칭 전압 (V)
+  "match_curr": 2.0,        // 매칭 전류 (A)
+  "match_temp": 45.0        // 매칭 온도 (°C)
 }
 ```
 
-RF 버전의 경우 센서 필드가 다름 (forward_power, reflected_power 등).
+### 호출 방법
+
+#### Python
+```python
+import requests
+
+data = {
+    "temp": 30.0,
+    "pressure": 1.0,
+    "vibration": 0.01,
+    "voltage": 2.0
+}
+
+response = requests.post("http://localhost:8001/infer", json=data)
+result = response.json()
+
+print(f"이상 감지: {'예' if result['is_anomaly'] else '아니오'}")
+```
+
+#### cURL
+```bash
+curl -X POST "http://localhost:8001/infer" \
+  -H "Content-Type: application/json" \
+  -d '{"temp": 30.0, "pressure": 1.0, "vibration": 0.01, "voltage": 2.0}'
+```
+
+#### JavaScript
+```javascript
+fetch('http://localhost:8001/infer', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    temp: 30.0,
+    pressure: 1.0,
+    vibration: 0.01,
+    voltage: 2.0
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### 응답 형식
+```json
+{
+  "reconstruction_score": 87.2703,  // 재구성 오차
+  "threshold": 0.0229,              // 임계값
+  "is_anomaly": true                // 이상 여부
+}
+```
 
 ## 모델 학습
 
