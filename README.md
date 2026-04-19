@@ -218,6 +218,10 @@ jbw_project/
     └── test_app.py                 # 유닛 테스트
 ```
 
+
+## 미리보기
+<img width="592" height="806" alt="image" src="https://github.com/user-attachments/assets/18513375-a413-4ccc-8225-08e8e8bf0dfe" />
+
 ## 기여
 
 기여를 환영합니다! 이슈나 PR을 통해 참여해주세요.
